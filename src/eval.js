@@ -74,13 +74,17 @@ State.prototype.scanLabels = function () {
   var frame = this.curFrame();
   if (!frame) return;
   var code = frame.code;
-  var labels = frame.labels = {};
+  var labels = this.labels = {};
   for(var i=0; i<code.length; i++) {
     var tok = code[i];
     if (typeof tok === 'object' && tok.type === 'label') {
       labels[tok.label] = i;
     }
   }
+};
+
+State.prototype.label = function (name) {
+  return this.labels[name];
 };
 
 State.prototype.goto = function (ip) {
@@ -129,12 +133,22 @@ function exec (state) {
       state.next();
       return cont(state);
     case 'goto':
-      var frame = state.curFrame();
-      var ip = frame.labels && frame.labels[token.label]
-      if (!ip)
+      var ip = state.label(token.label);
+      if (ip === undefined)
         throwError('Label "' + token.label + '" is not defined', state);
 
       state.goto(ip);
+      return cont(state);
+    case 'jz':
+      var n = state.pop();
+      state.next();
+      if (!n) {
+        var ip = state.label(token.label)
+        if (ip === undefined)
+          throwError('Label "' + token.label+ '" is not defined', state);
+
+        state.goto(ip);
+      }
       return cont(state);
 
     case 'op':
@@ -156,22 +170,6 @@ function exec (state) {
           return cont(state);
         });
       break;
-    case 'loop':
-      var code = token.code;
-      if (code) {
-        state.pushFrame(code);
-        return cont(state);
-      }
-    case 'if':
-      var cond = state.pop();
-      state.next();
-      if(cond) {
-        state.pushFrame(token.a)
-      } else {
-        state.pushFrame(token.b)
-      }
-
-      return cont(state);
     case 'sub':
       state.pushOp(token.name, token.body);
       state.next();
@@ -206,7 +204,7 @@ if (!module.parent) {
   var script = `pframe begin goto exit repeat exit:`
   var parsed = parser.parse(script);
   console.log(JSON.stringify(parsed, 0, 2));
-  0 && run(parsed)
+  run(parsed)
   .then(function (state) {
     state.ops.pstack(state)
     console.log(`DONE`);
