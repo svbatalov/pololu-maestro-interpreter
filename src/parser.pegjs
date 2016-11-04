@@ -1,5 +1,5 @@
 start
-  = ___ (Statements / Comment)* ___
+  = ___ statements:Statements? ___ { return statements ? statements : []; }
 
 Statements
   = head:Statement (__ / EOF)?
@@ -12,7 +12,7 @@ Statements
     }
 
 Statement
-  =  Sub / Goto / Cond / While / Loop / Label / Opcode / Number
+  = /*While / */ Sub / Goto / Cond / Loop / Label / Opcode / Number
 
 While
   = "WHILE"i ___ body:Statements? "REPEAT"i {
@@ -38,6 +38,7 @@ Goto
       label: label,
     };
   }
+
 Cond
   = "IF"i ___ a:Statements? b:("ELSE"i ___ Statements?)? "ENDIF"i {
     return {
@@ -46,10 +47,15 @@ Cond
       b: b && b[2],
     };
   }
+
 Loop
   = "BEGIN"i ___ code:Statements? "REPEAT"i {
-    return { loop: code };
+    return {
+      type: 'loop',
+      code: code,
+    };
   }
+
 Label
   = name:Word ":" {
     return {
@@ -58,15 +64,16 @@ Label
       };
   }
 Opcode
-  = !Reserved op:Word {
-    return {type: 'op', op: op};
+  = !Reserved name:Word {
+    return {type: 'op', name: name};
   }
+
 Number
   = num:[0-9]+ { return parseInt(num.join('', 10)); }
 Comment "comment"
   = "#" (!EOL .)*
 
-Reserved = "BEGIN"i / "REPEAT"i / "SUB"i / "WHILE"i / "IF"i / "ELSE"i / "ENDIF"i / "GOTO"i / "RETURN"i
+Reserved = "BEGIN"i / "REPEAT"i / "SUB"i / "IF"i / "ELSE"i / "ENDIF"i / "GOTO"i / "RETURN"i /* / "WHILE"i  */
 
 Word
   = word:[a-zA-Z_]+ { return word.join(''); }
