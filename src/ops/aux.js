@@ -34,6 +34,10 @@ function codeToStr(code, ip) {
   }).join(' ');
 }
 
+module.exports.info = function (state) {
+  console.log("INFO:", JSON.stringify(state, 0, 2));
+};
+
 module.exports.pstack = function (state) {
   console.log("STACK:", state.stack);
 };

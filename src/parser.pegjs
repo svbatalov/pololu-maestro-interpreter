@@ -12,7 +12,7 @@ Statements
     }
 
 Statement
-  = /*While / */ Sub / Goto / Cond / Loop / Label / Opcode / Number
+  = Sub / While / Goto / Cond / Loop / Label / Opcode / Number
 
 While
   = "WHILE"i ___ body:Statements? "REPEAT"i {
@@ -76,7 +76,7 @@ Comment "comment"
 Reserved = "BEGIN"i / "REPEAT"i / "SUB"i / "IF"i / "ELSE"i / "ENDIF"i / "GOTO"i / "RETURN"i /* / "WHILE"i  */
 
 Word
-  = word:[a-zA-Z_]+ { return word.join(''); }
+  = head:[a-zA-Z_] tail:[a-zA-Z_0-9]+ { return head[0] + tail.join(''); }
 
 Whitespace = [ \t\n\r]
 

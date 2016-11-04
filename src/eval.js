@@ -184,26 +184,29 @@ function exec (state) {
 }
 /**
  * Evaluate script, starting from given state
- * @param Array||Object state_or_code Initial state or code to run
+ * @param [Array || Object] state_or_code Initial state or code to run
  * @return
  */
-function run(state_or_code) {
-  var state, code;
-  if (Array.isArray(state_or_code)) {
-    code = state_or_code;
-    state = new State(code)
+function run(code, state) {
+  if (typeof code === 'string') {
+    code = parser.parse(code);
+  }
+  if (!state || !(state instanceof State)) {
+    state = new State(code);
   } else {
-    state = state_or_code;
+    state.setCode(code);
   }
 
   return Q().then(function () { return exec(state); });
 }
 
+module.exports = run;
+
 if (!module.parent) {
   var script = `pframe begin goto exit repeat exit:`
   var parsed = parser.parse(script);
   console.log(JSON.stringify(parsed, 0, 2));
-  run(parsed)
+  0 && run(parsed)
   .then(function (state) {
     state.ops.pstack(state)
     console.log(`DONE`);
