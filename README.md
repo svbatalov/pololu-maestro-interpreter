@@ -34,7 +34,8 @@ $ echo '1 2 plus pstack' | ./bin/repl.js -p
 ```
 
 ### From script
-Module exports two functions `run(code, state?, ops?)` and `parse("script")`.
+Module exports two functions `run(code, state?, ops?)` and `parse("script")`
+and the `State` class.
 
 Example:
 ```
@@ -73,5 +74,37 @@ Returns an array of tokens which are either numbers or objects `{type: TYPE, ...
 Currently parser transforms loops/conditionals to sequences of `goto <label>`, `jz <label>` and labels.
 Function definitions are moved to the beginning of parsed code.
 
+#### Creating state manually
+State is an instance of class `State`:
+```js
+var state = new State(code, opts)
+```
+Most important properties of state are `stack`, the evaluation stack, `exec`,
+the execution stack and `ops`, hash of available opcodes
+(including ones defined with `sub name ... return`).
+Second argument `opts` of constructor is merged with newly created state and can be used
+e.g. to provide additional opcodes:
+```js
+new State(code, {
+  ops: {
+    print: function (state) {
+    ...
+    }
+  }
+})
+```
+Here are most useful methods of state:
+* `state.push(val)`
+* `state.pop()`
+* `state.cont()` -- Continues evaluation from given state
+* `state.step(onStep)` -- Steps through the code, running `onStep(state)` after each instruction.
+* `state.isFinished()` -- Checks if script finished
+
+You can pause evaluation by setting `state.break = true` or `state.break = 5` to break after 5 instructions.
+For instance we can create paused state as follows:
+```js
+var state = new State('1 2 3', { break: true })
+state.cont().then( (state) => { /* We are still on the first instruction here */ }).done()
+```
 ## License
 MIT
