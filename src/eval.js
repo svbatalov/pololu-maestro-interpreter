@@ -110,6 +110,20 @@ State.prototype.cont = function () {
   return cont(this);
 }
 
+State.prototype.isFinished = function () {
+  return this.curFrame() === undefined;
+};
+
+State.prototype.step = function step(onStep) {
+  if (this.isFinished()) return Q(this);
+
+  state.break = 1;
+  onStep && onStep(this);
+  return this.cont().then( function (state) {
+    return state.step(onStep);
+  });
+};
+
 function throwError(message, state) {
   throw {
     message: message,
@@ -227,7 +241,10 @@ if (!module.parent) {
   var parsed = parser.parse(script);
   console.log(JSON.stringify(parsed, 0, 2));
   var state = new State(script, {});
-  state.cont().then(function (state) {
+  state.step( (state) => {
+    state.ops.pframe(state);
+  })
+  0 && state.cont().then(function (state) {
     state.ops.pstack(state)
     state.ops.pframe(state)
     console.log('DONE');
