@@ -153,23 +153,23 @@ function exec (state) {
       return cont(state);
 
     case 'op':
-        var op = state.op(token.name);
-        if (!op)
-          return throwError('OP "' + token.name + '" is not defined', state);
+      var op = state.op(token.name);
+      if (!op)
+        return throwError('OP "' + token.name + '" is not defined', state);
 
-        state.next()
+      state.next()
 
-        if (Array.isArray(op)) {
-          state.pushFrame(op);
-          return cont(state);
-        }
+      if (Array.isArray(op)) {
+        state.pushFrame(op);
+        return cont(state);
+      }
 
-        return Q().then( function () {
-          return op(state);
-        })
-        .then(function () {
-          return cont(state);
-        });
+      return Q().then( function () {
+        return op(state);
+      })
+      .then(function () {
+        return cont(state);
+      });
       break;
     case 'sub':
       state.pushOp(token.name, token.body);
@@ -179,8 +179,8 @@ function exec (state) {
     default:
       throwError("Not implemented", state);
   }
-  //console.log(`HERE %j`, state, state.token());
 }
+
 /**
  * Evaluate script, starting from given state
  * @param [Array || Object] state_or_code Initial state or code to run
