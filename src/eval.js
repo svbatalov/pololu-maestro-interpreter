@@ -118,7 +118,7 @@ State.prototype.step = function step(onStep) {
   if (this.isFinished()) return Q(this);
 
   state.break = 1;
-  onStep && onStep(this);
+  if (onStep && onStep(this) == false) return Q(state);
   return this.cont().then( function (state) {
     return state.step(onStep);
   });
@@ -243,7 +243,11 @@ if (!module.parent) {
   var state = new State(script, {});
   state.step( (state) => {
     state.ops.pframe(state);
-  })
+    if(state.curFrame().ip === 2) {
+      console.log('preliminary exit at', state.token() );
+      return false;
+    }
+  }).done()
   0 && state.cont().then(function (state) {
     state.ops.pstack(state)
     state.ops.pframe(state)
