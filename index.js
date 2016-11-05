@@ -1,6 +1,7 @@
 var parser = require('./src/parser');
-var run = require('./src/eval');
+var eval = require('./src/eval');
 module.exports = {
-  run: run,
+  run: eval.run,
   parse: parser.parse,
+  State: eval.State,
 };

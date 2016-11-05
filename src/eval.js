@@ -21,6 +21,9 @@ function State (code, opts) {
 }
 
 State.prototype.setCode = function (code) {
+  if (typeof code === 'string') {
+    code = parser.parse(code);
+  }
   this.exec[0] = {ip: 0, code: code || []};
   this.scanLabels();
   return this;
@@ -119,6 +122,12 @@ function cont(state) {
   })
 }
 function exec (state) {
+  if (typeof state.break !== "undefined"
+      && (state.break === true || state.break-- === 0) ) {
+    log('BREAK since state.break == %j', state.break);
+    delete state.break;
+    return Q(state);
+  }
   var token = state.token();
 
   log('EXEC %j', token);
@@ -189,16 +198,13 @@ function exec (state) {
  * Evaluate script, starting from given state
  * USAGE: run(String||Array, prevState?, additionalOPs?)
  *
- * @param [Array || Object] code Code to run
+ * @param [String || Array] code Code to run
  * @param State State to start from (optional)
  * @param Object ops Additional OPs (optional)
  *
  * @return Promise Promise resolving to State
  */
 function run(code, state, ops) {
-  if (typeof code === 'string') {
-    code = parser.parse(code);
-  }
   if (!(state instanceof State)) {
     ops = state;
     state = null;
@@ -210,23 +216,24 @@ function run(code, state, ops) {
   }
 
   mxtend(state.ops, ops);
-
-  return Q().then(function () { return exec(state); });
+  return cont(state);
 }
 
-module.exports = run;
+module.exports.run = run;
+module.exports.State = State;
 
 if (!module.parent) {
-  var script = 'pframe begin goto exit repeat exit:';
+  var script = '1 2 break 3 4';
   var parsed = parser.parse(script);
   console.log(JSON.stringify(parsed, 0, 2));
-  run(parsed)
-  .then(function (state) {
+  var state = new State(script, {});
+  state.cont().then(function (state) {
     state.ops.pstack(state)
+    state.ops.pframe(state)
     console.log('DONE');
   })
   .catch(function (err) {
-    console.error('ERR %j', err);
+    console.error('ERR', err);
   })
   .done();
 }

@@ -46,7 +46,11 @@ module.exports.pstack = function (state) {
 module.exports.pframe = function (state) {
   var frame = state.curFrame();
 
-  console.log("FRAME:", codeToStr(frame.code, frame.ip) );
+  console.log("FRAME:", frame && codeToStr(frame.code, frame.ip) );
+};
+
+module.exports.break = function (state) {
+  state.break = true;
 };
 module.exports.pcstack = function (state) {
   console.log("CALLSTACK:", JSON.stringify(state.exec));
