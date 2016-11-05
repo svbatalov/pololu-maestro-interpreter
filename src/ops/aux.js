@@ -9,6 +9,8 @@ function formatTok(tok) {
       return "SUB " + tok.name + " " + codeToStr(tok.body) + " RETURN";
     case 'goto':
       return "GOTO " + tok.label;
+    case 'jz':
+      return "JZ " + tok.label;
     case 'label':
       return tok.label + ":";
     case 'if':

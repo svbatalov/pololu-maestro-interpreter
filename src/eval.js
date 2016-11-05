@@ -12,7 +12,7 @@ function State (code, opts) {
   // execution stack
   this.exec = [];
 
-  // opcodes
+  // default opcodes
   this.ops = ops;
 
   this.setCode(code || [])
@@ -103,6 +103,10 @@ State.prototype.pushOp = function (name, op) {
   return this;
 }
 
+State.prototype.cont = function () {
+  return cont(this);
+}
+
 function throwError(message, state) {
   throw {
     message: message,
@@ -117,7 +121,7 @@ function cont(state) {
 function exec (state) {
   var token = state.token();
 
-  log(`EXEC %j`, token);
+  log('EXEC %j', token);
 
   if (!token && token !== 0) {
     return Q(state);
@@ -183,18 +187,29 @@ function exec (state) {
 
 /**
  * Evaluate script, starting from given state
- * @param [Array || Object] state_or_code Initial state or code to run
- * @return
+ * USAGE: run(String||Array, prevState?, additionalOPs?)
+ *
+ * @param [Array || Object] code Code to run
+ * @param State State to start from (optional)
+ * @param Object ops Additional OPs (optional)
+ *
+ * @return Promise Promise resolving to State
  */
-function run(code, state) {
+function run(code, state, ops) {
   if (typeof code === 'string') {
     code = parser.parse(code);
   }
-  if (!state || !(state instanceof State)) {
+  if (!(state instanceof State)) {
+    ops = state;
+    state = null;
+  }
+  if (!state) {
     state = new State(code);
   } else {
     state.setCode(code);
   }
+
+  mxtend(state.ops, ops);
 
   return Q().then(function () { return exec(state); });
 }
@@ -202,13 +217,13 @@ function run(code, state) {
 module.exports = run;
 
 if (!module.parent) {
-  var script = `pframe begin goto exit repeat exit:`
+  var script = 'pframe begin goto exit repeat exit:';
   var parsed = parser.parse(script);
   console.log(JSON.stringify(parsed, 0, 2));
   run(parsed)
   .then(function (state) {
     state.ops.pstack(state)
-    console.log(`DONE`);
+    console.log('DONE');
   })
   .catch(function (err) {
     console.error('ERR %j', err);
