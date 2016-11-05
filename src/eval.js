@@ -74,17 +74,18 @@ State.prototype.scanLabels = function () {
   var frame = this.curFrame();
   if (!frame) return;
   var code = frame.code;
-  var labels = this.labels = {};
+  var labels = frame.labels = {};
   for(var i=0; i<code.length; i++) {
     var tok = code[i];
     if (typeof tok === 'object' && tok.type === 'label') {
+      log('SCANLABELS found ' + tok.label + ' at ' + i);
       labels[tok.label] = i;
     }
   }
 };
 
 State.prototype.label = function (name) {
-  return this.labels[name];
+  return this.curFrame().labels[name];
 };
 
 State.prototype.goto = function (ip) {
@@ -135,7 +136,7 @@ function exec (state) {
     case 'goto':
       var ip = state.label(token.label);
       if (ip === undefined)
-        throwError('Label "' + token.label + '" is not defined', state);
+        throwError('GOTO: Label "' + token.label + '" is not defined', state);
 
       state.goto(ip);
       return cont(state);
@@ -145,7 +146,7 @@ function exec (state) {
       if (!n) {
         var ip = state.label(token.label)
         if (ip === undefined)
-          throwError('Label "' + token.label+ '" is not defined', state);
+          throwError('JZ: Label "' + token.label+ '" is not defined', state);
 
         state.goto(ip);
       }

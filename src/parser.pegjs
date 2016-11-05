@@ -11,8 +11,17 @@ Statements
       for (var i=0; i<tail.length; i++) {
         result.push(tail[i][0]);
       }
+
       // Unwrap (flatten) results returned by Loop etc.
-      return [].concat.apply([], result);
+      result = [].concat.apply([], result);
+
+      // Move SUBs to the beginning
+      return result.reduce(function(prev, el) {
+        if (el && el.type === 'sub') {
+          return [el].concat(prev);
+        }
+        return prev.concat(el);
+      }, []);
     }
 
 Statement
@@ -23,8 +32,8 @@ Sub
     return {
       type: 'sub',
       name: name,
-      body: body,
-    }
+      body: body || [],
+    };
   }
 
 Goto
