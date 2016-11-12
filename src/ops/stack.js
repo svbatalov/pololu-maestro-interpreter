@@ -43,5 +43,8 @@ module.exports.peek = function (state) {
 module.exports.poke = function (state) {
   var n = state.pop();
   var m = state.pop();
-  state.stack.splice(n, 0, m);
+  // Signature in documentation is wrong!
+  // Should be -2 instead of -2,+1.
+  //state.stack.splice(n, 0, m);
+  state.stack[n] = m;
 };
