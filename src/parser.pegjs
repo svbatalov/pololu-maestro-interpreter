@@ -88,7 +88,7 @@ Opcode
   }
 
 Number
-  = num:[0-9]+ { return parseInt(num.join('', 10)); }
+  = num:("-"? [0-9]+) { return parseInt(num.join('', 10)); }
 
 Comment "comment"
   = "#" (!EOL .)*
