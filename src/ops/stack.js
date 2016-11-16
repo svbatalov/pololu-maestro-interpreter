@@ -24,13 +24,13 @@ module.exports.pick = function (state) {
   state.push(m);
 };
 
-module.exports.swap = parse('2 roll');
+module.exports.swap = parse('1 roll');
 
-module.exports.rot = parse('3 roll');
+module.exports.rot = parse('2 roll');
 
 module.exports.roll = function (state) {
   var n = state.pop();
-  n = state.stack.length - n;
+  n = state.stack.length - n - 1;
   var m = state.stack.splice(n,1);
   state.push(m[0]);
 };
