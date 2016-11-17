@@ -13,3 +13,7 @@ module.exports.while = function (state) {
 module.exports.delay = function (state) {
   return Q.delay(state.pop());
 };
+
+module.exports.quit = function (state) {
+  state.exec = [];
+};
