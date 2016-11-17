@@ -41,7 +41,7 @@ module.exports.info = function (state) {
 };
 
 module.exports.pstack = function (state) {
-  console.log("STACK:", state.stack);
+  console.log("STACK(%d):", state.stack.length, state.stack);
 };
 module.exports.pframe = function (state) {
   var frame = state.curFrame();
