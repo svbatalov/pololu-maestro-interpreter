@@ -235,26 +235,3 @@ function run(code, state, ops) {
 
 module.exports.run = run;
 module.exports.State = State;
-
-if (!module.parent) {
-  var script = '1 2 break 3 4';
-  var parsed = parser.parse(script);
-  console.log(JSON.stringify(parsed, 0, 2));
-  var state = new State(script, {});
-  state.step( (state) => {
-    state.ops.pframe(state);
-    if(state.curFrame().ip === 2) {
-      console.log('preliminary exit at', state.token() );
-      return false;
-    }
-  }).done()
-  0 && state.cont().then(function (state) {
-    state.ops.pstack(state)
-    state.ops.pframe(state)
-    console.log('DONE');
-  })
-  .catch(function (err) {
-    console.error('ERR', err);
-  })
-  .done();
-}
