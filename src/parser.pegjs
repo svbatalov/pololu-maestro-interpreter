@@ -25,7 +25,7 @@ Statements
     }
 
 Statement
-  = Label / Sub / Goto / Cond / LoopWhile / Opcode / Number
+  = Label / Sub / Goto / Cond / LoopWhile / Opcode / Number / QuotedStringLiteral
 
 Sub
   = "SUB"i __ name:Word ___ body:Statements? "RETURN"i {
@@ -92,6 +92,35 @@ Number
     (sign === null) && (sign = '');
     return parseInt(sign + num.join('', 10));
   }
+
+QuotedStringLiteral "string"
+  = parts:('"' QuotedStringCharacters? '"' ) {
+      return parts[1] || '';
+    }
+
+QuotedStringCharacters
+  = chars:QuotedStringCharacter+ { return chars.join(""); }
+
+QuotedStringCharacter
+  = Escaped
+  / !"\"" char:. { return char; }
+
+Escaped
+  = "\\" char:(SingleEscapeCharacter / NonEscapeCharacter) { return char; }
+
+SingleEscapeCharacter
+  = char:[\'\"\\bfnrtv] {
+      return char
+        .replace("b", "\b")
+        .replace("f", "\f")
+        .replace("n", "\n")
+        .replace("r", "\r")
+        .replace("t", "\t")
+        .replace("v", "\x0B")
+    }
+
+NonEscapeCharacter
+  = !SingleEscapeCharacter char:. { return char; }
 
 Comment "comment"
   = "#" (!EOL .)*
